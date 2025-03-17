@@ -107,31 +107,46 @@ for contour in contours:
             countourBig.append(contour)
 
 
-contourProcess = countourBig[2]
+contourProcess = countourBig[5]
 
 points = [tuple(pt[0]) for pt in contourProcess]
 
 # for point in points:
 #     cv2.circle(resized, point, 1, (0,0,255), -1)
 
+
 GoingPositive = True
 counter = 0
-counter += 4
+
 x1, y1 = points[counter]
-cv2.circle(resized, points[counter], 2, (0,0,255), -1)
+
+cv2.circle(resized, points[counter], 2, (0,0,0), -1)
 
 counter += 2
 cv2.circle(resized, points[counter], 2, (0,0,255), -1)
 x2, y2 = points[counter]
 
+counter += 2
+cv2.circle(resized, points[counter], 2, (0,255,255), -1)
+x3, y3 = points[counter]
+
 slope = math.degrees(math.atan(find_slope(x1, y1, x2, y2)))
+slope2 = math.degrees(math.atan(find_slope(x1, y1, x3, y3)))
+
+print(slope)
+print(slope2)
+print(abs(slope - slope2))
+
+if abs(slope - slope2) > 3:
+    counter = 2
+    x1, y1 = points[counter]
+    slope = slope2
 
 p3 = points[counter]
 
-print(counter)
-print(slope)
-
 failCounter = 0
+
+lastValidCounter = counter
 
 while (GoingPositive):
     counter += 2
@@ -141,67 +156,76 @@ while (GoingPositive):
 
     slopeIncrement = math.degrees(math.atan(find_slope(x1, y1, x3, y3)))
     print(slopeIncrement)
+    print(abs(slope - slopeIncrement))
 
-    if abs(slope - slopeIncrement) > 2 and abs(slope - slopeIncrement) < 6 and failCounter <= 1:
+    if abs(slope - slopeIncrement) > 3 and abs(slope - slopeIncrement) < 15 and failCounter <= 3:
         failCounter += 1
-    elif abs(slope - slopeIncrement) > 2:
+    elif abs(slope - slopeIncrement) > 3:
+        if abs(slope - slopeIncrement) > 5:
+            counter = lastValidCounter
+            x3, y3 = points[counter]
+
+            slopeIncrement = math.degrees(math.atan(find_slope(x1, y1, x3, y3)))
+            cv2.circle(resized, points[counter], 2, (0,0,255), -1)
         GoingPositive = False
         p4 = points[counter]
         cv2.line(resized, (x1, y1), (x3, y3), (0, 255, 0), 2)
         cv2.circle(resized, points[counter], 2, (0,0,255), -1)
+    else:
+        lastValidCounter = counter
 
-GoingPositive = True
-counter = 0
-counter += 4
-x1, y1 = points[len(points) - counter]
-cv2.circle(resized, points[len(points) - counter], 2, (0,0,255), -1)
+# GoingPositive = True
+# counter = 0
+# counter += 4
+# x1, y1 = points[len(points) - counter]
+# cv2.circle(resized, points[len(points) - counter], 2, (0,0,255), -1)
 
-counter += 2
-x2, y2 = points[len(points) - counter]
+# counter += 2
+# x2, y2 = points[len(points) - counter]
 
-slope = math.degrees(math.atan(find_slope(x1, y1, x2, y2)))
+# slope = math.degrees(math.atan(find_slope(x1, y1, x2, y2)))
 
-print(counter)
-print(slope)
+# print(counter)
+# print(slope)
 
-p1 = points[len(points) - counter]
-failCounter = 0
+# p1 = points[len(points) - counter]
+# failCounter = 0
 
-while (GoingPositive):
-    counter += 2
-    print(counter)
-    # cv2.circle(resized, points[counter], 5, (0,0,255), -1)
-    x3, y3 = points[len(points) - counter]
+# while (GoingPositive):
+#     counter += 2
+#     print(counter)
+#     # cv2.circle(resized, points[counter], 5, (0,0,255), -1)
+#     x3, y3 = points[len(points) - counter]
 
-    slopeIncrement = math.degrees(math.atan(find_slope(x1, y1, x3, y3)))
-    cv2.circle(resized, points[len(points) - counter], 2, (0,0,255), -1)
-    print(slopeIncrement)
+#     slopeIncrement = math.degrees(math.atan(find_slope(x1, y1, x3, y3)))
+#     cv2.circle(resized, points[len(points) - counter], 2, (0,0,255), -1)
+#     print(slopeIncrement)
 
-    if abs(slope - slopeIncrement) > 2 and abs(slope - slopeIncrement) < 6  and failCounter <= 1:
-        failCounter += 1
-    elif abs(slope - slopeIncrement) > 2:
-        if abs(slope - slopeIncrement) > 5:
-            counter -= 2
-            x3, y3 = points[len(points) - counter]
+#     if abs(slope - slopeIncrement) > 2 and abs(slope - slopeIncrement) < 6  and failCounter <= 1:
+#         failCounter += 1
+#     elif abs(slope - slopeIncrement) > 2:
+#         if abs(slope - slopeIncrement) > 5:
+#             counter -= 2
+#             x3, y3 = points[len(points) - counter]
 
-            slopeIncrement = math.degrees(math.atan(find_slope(x1, y1, x3, y3)))
-            cv2.circle(resized, points[len(points) - counter], 2, (0,0,255), -1)
+#             slopeIncrement = math.degrees(math.atan(find_slope(x1, y1, x3, y3)))
+#             cv2.circle(resized, points[len(points) - counter], 2, (0,0,255), -1)
 
-        p2 = points[len(points) - counter]
-        GoingPositive = False
-        cv2.line(resized, (x1, y1), (x3, y3), (0, 255, 0), 2)
-        cv2.circle(resized, points[len(points) - counter], 2, (0,0,255), -1)
+#         p2 = points[len(points) - counter]
+#         GoingPositive = False
+#         cv2.line(resized, (x1, y1), (x3, y3), (0, 255, 0), 2)
+#         cv2.circle(resized, points[len(points) - counter], 2, (0,0,255), -1)
 
-# Find intersection
-intersection = find_intersection(p1, p2, p3, p4)
+# # Find intersection
+# intersection = find_intersection(p1, p2, p3, p4)
 
-if intersection:
-    # cv2.circle(resized, (int(intersection[0]), int(intersection[1])), 5, (255, 0, 255), -1)  # Red dot
-    newPoint1X = int((intersection[0] - p2[0])/2)
-    newPoint1Y = int((intersection[1] - p2[1])/2)
-    newPoint2 = (int(intersection[0] - (intersection[0] - p4[0])/2) - newPoint1X, int(intersection[1] - (intersection[1] - p4[1])/2) - newPoint1Y)
-    # cv2.circle(resized, newPoint1, 5, (255, 0, 0), -1)
-    cv2.circle(resized, newPoint2, 5, (255, 0, 255), -1)
+# if intersection:
+#     # cv2.circle(resized, (int(intersection[0]), int(intersection[1])), 5, (255, 0, 255), -1)  # Red dot
+#     newPoint1X = int((intersection[0] - p2[0])/2)
+#     newPoint1Y = int((intersection[1] - p2[1])/2)
+#     newPoint2 = (int(intersection[0] - (intersection[0] - p4[0])/2) - newPoint1X, int(intersection[1] - (intersection[1] - p4[1])/2) - newPoint1Y)
+#     # cv2.circle(resized, newPoint1, 5, (255, 0, 0), -1)
+#     cv2.circle(resized, newPoint2, 5, (255, 0, 255), -1)
 
 
 
