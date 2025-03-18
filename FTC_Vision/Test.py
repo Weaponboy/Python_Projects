@@ -98,98 +98,55 @@ for contour in contours:
             countourBig.append(contour)
 
 
-contourProcess = countourBig[5]
+contourProcess = countourBig[2]
 
 points = [tuple(pt[0]) for pt in contourProcess]
 
 GoingPositive = True
-GoingNegitive = True
+cv2.circle(resized, points[0], 2, (0,0,0), -1)
 
 highestPoint = points[0]
-cv2.circle(resized, highestPoint, 2, (0,0,0), -1)
-intercept1 = points[0]
-intercept2 = points[0]
+intercept = highestPoint[1]
 
-counter = 0
+counter = 1
 
-Slopes1Real = []
-SlopeTotal1Real = 0
-Slopes1 = []
-SlopeTotal1 = 0
+Slopes = []
+SlopeTotal = 0
 
-Slopes2Real = []
-SlopeTotal2Real = 0
-Slopes2 = []
-SlopeTotal2 = 0
-
-while (GoingPositive or GoingNegitive):
-
-    print(counter)
-
-    if GoingPositive:
-        x1, y1 = points[counter]
-        x2, y2 = points[counter+2]
-
-        slopeInIf1 = (find_slope(x1, y1, x2, y2))
-
-        cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
-
-        SlopeTotal1 += slopeInIf1
-        Slopes1.append(slopeInIf1)
-
-        if abs(math.degrees(math.atan(SlopeTotal1/len(Slopes1))) - math.degrees(math.atan(slopeInIf1))) > 5 and counter > 5:
-            GoingPositive = False
-            print(abs(math.degrees(math.atan(SlopeTotal1/len(Slopes1))) - math.degrees(math.atan(slopeInIf1))))
-        elif abs(math.degrees(math.atan(SlopeTotal1/len(Slopes1))) - math.degrees(math.atan(slopeInIf1))) < 5:
-            SlopeTotal1Real += slopeInIf1
-            Slopes1Real.append(slopeInIf1)
-
-        print("slope1: " + str(math.degrees(math.atan(slopeInIf1))))
-
-    if GoingNegitive:
-        x1, y1 = points[len(points) - (counter+1)]
-        x2, y2 = points[len(points) - (counter+3)]
-
-        slopeInIf2 = (find_slope(x1, y1, x2, y2))
-
-        cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
-
-        SlopeTotal2 += slopeInIf2
-        Slopes2.append(slopeInIf2)
-
-        if abs(math.degrees(math.atan(SlopeTotal2/len(Slopes2))) - math.degrees(math.atan(slopeInIf2))) > 5 and counter > 5: 
-            GoingNegitive = False
-            print(abs(math.degrees(math.atan(SlopeTotal2/len(Slopes2))) - math.degrees(math.atan(slopeInIf2))))
-        elif abs(math.degrees(math.atan(SlopeTotal1/len(Slopes1))) - math.degrees(math.atan(slopeInIf1))) < 5:
-            SlopeTotal2Real += slopeInIf2
-            Slopes2Real.append(slopeInIf2)
-
-        print("slope2: " + str(math.degrees(math.atan(slopeInIf2))))
+while (GoingPositive):
 
     counter += 1
+    print(counter)
+
+    x1, y1 = points[counter]
+    x2, y2 = points[counter+2]
+
+    x3, y3 = points[len(points) - (counter+2)]
+    x4, y4 = points[len(points) - counter]
+
+    slope1 = (find_slope(x1, y1, x2, y2))
+    slope2 = (find_slope(x3, y3, x4, y4))
+
+    SlopeTotal += slope1
+    Slopes.append(slope1)
+
+    print("slope1: " + str(math.degrees(math.atan(slope1))))
+    print("slope2: " + str(math.degrees(math.atan(slope2))))
+
+    cv2.circle(resized, points[counter], 2, (0,0,255), -1)
+    cv2.circle(resized, points[len(points) - counter], 2, (255,0,255), -1)
+
+    if counter > 20:
+        GoingPositive = False
 
 
-slope1 = -(SlopeTotal1Real/len(Slopes1Real))
-slope2 = -(SlopeTotal2Real/len(Slopes2Real))
+# slope = SlopeTotal/len(Slopes)
+# x1, x2 = 0, 499
 
-intercept1 = points[int(counter/2)]
-intercept2 = points[len(points) - int(counter/2)]
+# y1 = int(slope * x1 + intercept)
+# y2 = int(slope * x2 + intercept)
 
-x1 = int(intercept1[0] - (100))
-x2 = int(intercept1[0] + (100))
-
-y1 = int(intercept1[1] + (100 * slope1))
-y2 = int(intercept1[1] - (100 * slope1))
-
-cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
-
-x1 = int(intercept2[0] - (100))
-x2 = int(intercept2[0] + (100))
-
-y1 = int(intercept2[1] + (100 * slope2))
-y2 = int(intercept2[1] - (100 * slope2))
-
-cv2.line(resized, (x2, y2), (x1, y1), (0, 0, 255), 2)
+# cv2.line(resized, (x1, y1), (x2, y2), (0, 255, 0), 2)
 
 cv2.imshow("Detected Rectangles", resized)
 cv2.waitKey(0)
