@@ -33,17 +33,6 @@ def returnExpectedSideLength(x1, y1, x2, y2):
     return (y2 - y1) / (x2 - x1)
 
 def find_intersection(p1, p2, p3, p4):
-    """
-    Finds the intersection point of two lines given their endpoints.
-    
-    Parameters:
-    p1, p2 - (x, y) coordinates of the first line
-    p3, p4 - (x, y) coordinates of the second line
-
-    Returns:
-    (x, y) intersection point as a tuple, or None if lines are parallel.
-    """
-    
     x1, y1 = p1
     x2, y2 = p2
     x3, y3 = p3
@@ -64,11 +53,14 @@ def find_intersection(p1, p2, p3, p4):
 
     return (x, y)
 
+def distance(point1: tuple, point2: tuple) -> float:
+    return math.sqrt((point2[0] - point1[0]) ** 2 + (point2[1] - point1[1]) ** 2)
+
 countourBig = []
 
 for contour in contours:
     area = cv2.contourArea(contour)
-    contour_length = len(contour)  # Get the number of points in the contour
+    contour_length = len(contour)
 
     M = cv2.moments(contour)
     if M["m00"] != 0:
@@ -80,7 +72,6 @@ for contour in contours:
     # points = [tuple(pt[0]) for pt in contour]
 
     # cv2.circle(resized, points[0], 5, (0,0,255), -1)
-
     
     if cY > 300 and area > 1200:
         # Display contour area and length
@@ -107,13 +98,12 @@ for contour in contours:
             countourBig.append(contour)
 
 
-contourProcess = countourBig[5]
+contourProcess = countourBig[2]
 
 points = [tuple(pt[0]) for pt in contourProcess]
 
 # for point in points:
 #     cv2.circle(resized, point, 1, (0,0,255), -1)
-
 
 GoingPositive = True
 counter = 0
@@ -147,8 +137,10 @@ p3 = points[counter]
 failCounter = 0
 
 lastValidCounter = counter
+findNewHighPoint = False
 
 while (GoingPositive):
+
     counter += 2
     print(counter)
     cv2.circle(resized, points[counter], 2, (0,0,255), -1)
@@ -159,21 +151,31 @@ while (GoingPositive):
     print(abs(slope - slopeIncrement))
 
     if abs(slope - slopeIncrement) > 3 and abs(slope - slopeIncrement) < 15 and failCounter <= 3:
+
         failCounter += 1
+
     elif abs(slope - slopeIncrement) > 3:
+
         if abs(slope - slopeIncrement) > 5:
+
             counter = lastValidCounter
             x3, y3 = points[counter]
 
             slopeIncrement = math.degrees(math.atan(find_slope(x1, y1, x3, y3)))
             cv2.circle(resized, points[counter], 2, (0,0,255), -1)
+
+        if distance((x1, y1), (x3, y3)) < 10:
+            findNewHighPoint = True
+
         GoingPositive = False
         p4 = points[counter]
         cv2.line(resized, (x1, y1), (x3, y3), (0, 255, 0), 2)
         cv2.circle(resized, points[counter], 2, (0,0,255), -1)
+
     else:
         lastValidCounter = counter
 
+print(findNewHighPoint)
 # GoingPositive = True
 # counter = 0
 # counter += 4
