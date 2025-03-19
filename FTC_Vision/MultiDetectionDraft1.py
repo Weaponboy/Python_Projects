@@ -110,7 +110,7 @@ for contour in contours:
             countourBig.append(contour)
 
 
-contourProcess = countourBig[3]
+contourProcess = countourBig[0]
 
 points = [tuple(pt[0]) for pt in contourProcess]
 
@@ -118,7 +118,7 @@ GoingPositive = True
 GoingNegitive = True
 
 highestPoint = points[0]
-cv2.circle(resized, highestPoint, 2, (0,0,0), -1)
+# cv2.circle(resized, highestPoint, 2, (0,0,0), -1)
 intercept1 = points[0]
 intercept2 = points[0]
 
@@ -146,7 +146,7 @@ while (GoingPositive or GoingNegitive):
 
         slopeInIf1 = (find_slope(x1, y1, x2, y2))
 
-        cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
+        # cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
 
         SlopeTotal1 += slopeInIf1
         Slopes1.append(slopeInIf1)
@@ -165,7 +165,7 @@ while (GoingPositive or GoingNegitive):
 
         slopeInIf2 = (find_slope(x1, y1, x2, y2))
 
-        cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
+        # cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
 
         SlopeTotal2 += slopeInIf2
         Slopes2.append(slopeInIf2)
@@ -194,7 +194,7 @@ x2 = int(intercept1[0] + (100))
 y1 = int(intercept1[1] + (100 * slope1))
 y2 = int(intercept1[1] - (100 * slope1))
 
-cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
+# cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
 
 x3 = int(intercept2[0] - (100))
 x4 = int(intercept2[0] + (100))
@@ -202,7 +202,7 @@ x4 = int(intercept2[0] + (100))
 y3 = int(intercept2[1] + (100 * slope2))
 y4 = int(intercept2[1] - (100 * slope2))
 
-cv2.line(resized, (x3, y3), (x4, y4), (0, 0, 255), 2)
+# cv2.line(resized, (x3, y3), (x4, y4), (0, 0, 255), 2)
 
 line1 = ((x1, y1), (x2, y2))
 line2 = ((x3, y3), (x4, y4))
@@ -228,7 +228,7 @@ while (GoingPositive or GoingNegitive):
 
         if abs(math.degrees(math.atan(SlopeTotal1Real/len(Slopes1Real))) - math.degrees(math.atan(slopeInIf1))) > 5 and counter > 5:
             GoingPositive = False
-            endPoint1 = points[counter-2]
+            endPoint1 = points[counter]
 
     if GoingNegitive:
         x1, y1 = intersection
@@ -238,19 +238,19 @@ while (GoingPositive or GoingNegitive):
 
         print(abs(math.degrees(math.atan(SlopeTotal2Real/len(Slopes2Real))) - math.degrees(math.atan(slopeInIf2))))
 
-        if abs(math.degrees(math.atan(SlopeTotal2Real/len(Slopes2Real))) - math.degrees(math.atan(slopeInIf2))) > 5 and counter > 5: 
+        if abs(math.degrees(math.atan(SlopeTotal2Real/len(Slopes2Real))) - math.degrees(math.atan(slopeInIf2))) > 3 and counter > 5 and distance((x2, y2), intersection) > 30: 
             GoingNegitive = False
             endPoint2 = points[len(points) - (counter-2)]
 
     counter += 1
 
-cv2.circle(resized, (int(intersection[0]), int(intersection[1])), 4, (0,0,0), -1)
+# cv2.circle(resized, (int(intersection[0]), int(intersection[1])), 4, (0,0,0), -1)
 
-Side1X = (intersection[0] - endPoint1[0])*0.5
-Side1Y = (endPoint1[1] - intersection[1])*0.5
+Side1X = (intersection[0] - endPoint1[0])*0.4
+Side1Y = (endPoint1[1] - intersection[1])*0.4
 
-Side2X = (intersection[0] - endPoint2[0])*0.5
-Side2Y = (endPoint2[1] - intersection[1])*0.5
+Side2X = (intersection[0] - endPoint2[0])*0.4
+Side2Y = (endPoint2[1] - intersection[1])*0.4
 
 # Side1X = (intersection[0] - endPoint1[0])
 # Side1Y = (endPoint1[1] - intersection[1])
@@ -263,8 +263,8 @@ centerPoint2 = (int(intersection[0] - Side2X), int(intersection[1] + Side2Y))
 
 centerPoint = (int(intersection[0] - Side2X - Side1X), int(intersection[1] + Side2Y + Side1Y))
 
-cv2.circle(resized, (centerPoint1), 4, (0,0,0), -1)
-cv2.circle(resized, (centerPoint2), 4, (0,0,0), -1)
+# cv2.circle(resized, (centerPoint1), 4, (0,0,0), -1)
+# cv2.circle(resized, (centerPoint2), 4, (0,0,0), -1)
 
 cv2.circle(resized, (centerPoint), 4, (255,0,255), -1)
 
