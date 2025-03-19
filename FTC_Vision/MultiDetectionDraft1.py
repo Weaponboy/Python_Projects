@@ -2,25 +2,37 @@ import cv2
 import numpy as np
 import math
 
-# Load image
 image = cv2.imread("images/CameraV.jpg")
 resized = cv2.resize(image, (600, 600))  
 
 hsv = cv2.cvtColor(resized, cv2.COLOR_BGR2HSV)
 
-# Adjusted HSV range
 lower_bound = np.array([10, 100, 130])  
 upper_bound = np.array([35, 255, 255])
 
 mask = cv2.inRange(hsv, lower_bound, upper_bound)
 
-# Morphological operations to clean up mask
 kernel = np.ones((5, 5), np.uint8)
 mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
 mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
 
-# Find contours
 contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+def find_intersection_2(line1, line2):
+
+    (x1, y1), (x2, y2) = line1
+    (x3, y3), (x4, y4) = line2
+
+    denominator = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4)
+
+    if denominator == 0:
+        return None 
+
+    px = ((x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4)) / denominator
+    py = ((x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4)) / denominator
+
+    return px, py
+
 
 def find_slope(x1, y1, x2, y2):
     if x1 == x2:
@@ -98,7 +110,7 @@ for contour in contours:
             countourBig.append(contour)
 
 
-contourProcess = countourBig[5]
+contourProcess = countourBig[3]
 
 points = [tuple(pt[0]) for pt in contourProcess]
 
@@ -116,11 +128,13 @@ Slopes1Real = []
 SlopeTotal1Real = 0
 Slopes1 = []
 SlopeTotal1 = 0
+endPoint1 = 0
 
 Slopes2Real = []
 SlopeTotal2Real = 0
 Slopes2 = []
 SlopeTotal2 = 0
+endPoint2 = 0
 
 while (GoingPositive or GoingNegitive):
 
@@ -139,12 +153,11 @@ while (GoingPositive or GoingNegitive):
 
         if abs(math.degrees(math.atan(SlopeTotal1/len(Slopes1))) - math.degrees(math.atan(slopeInIf1))) > 5 and counter > 5:
             GoingPositive = False
+            endPoint1 = points[counter]
             print(abs(math.degrees(math.atan(SlopeTotal1/len(Slopes1))) - math.degrees(math.atan(slopeInIf1))))
         elif abs(math.degrees(math.atan(SlopeTotal1/len(Slopes1))) - math.degrees(math.atan(slopeInIf1))) < 5:
             SlopeTotal1Real += slopeInIf1
             Slopes1Real.append(slopeInIf1)
-
-        print("slope1: " + str(math.degrees(math.atan(slopeInIf1))))
 
     if GoingNegitive:
         x1, y1 = points[len(points) - (counter+1)]
@@ -159,21 +172,21 @@ while (GoingPositive or GoingNegitive):
 
         if abs(math.degrees(math.atan(SlopeTotal2/len(Slopes2))) - math.degrees(math.atan(slopeInIf2))) > 5 and counter > 5: 
             GoingNegitive = False
+            endPoint2 = points[len(points) - (counter+1)]
             print(abs(math.degrees(math.atan(SlopeTotal2/len(Slopes2))) - math.degrees(math.atan(slopeInIf2))))
-        elif abs(math.degrees(math.atan(SlopeTotal1/len(Slopes1))) - math.degrees(math.atan(slopeInIf1))) < 5:
+        elif abs(math.degrees(math.atan(SlopeTotal2/len(Slopes2))) - math.degrees(math.atan(slopeInIf2))) < 5:
             SlopeTotal2Real += slopeInIf2
             Slopes2Real.append(slopeInIf2)
 
-        print("slope2: " + str(math.degrees(math.atan(slopeInIf2))))
-
     counter += 1
 
+CounterSaved = counter
 
 slope1 = -(SlopeTotal1Real/len(Slopes1Real))
 slope2 = -(SlopeTotal2Real/len(Slopes2Real))
 
-intercept1 = points[int(counter/2)]
-intercept2 = points[len(points) - int(counter/2)]
+intercept1 = points[int(CounterSaved/2)]
+intercept2 = points[len(points) - int(CounterSaved/2)]
 
 x1 = int(intercept1[0] - (100))
 x2 = int(intercept1[0] + (100))
@@ -183,13 +196,80 @@ y2 = int(intercept1[1] - (100 * slope1))
 
 cv2.line(resized, (x2, y2), (x1, y1), (0, 255, 0), 2)
 
-x1 = int(intercept2[0] - (100))
-x2 = int(intercept2[0] + (100))
+x3 = int(intercept2[0] - (100))
+x4 = int(intercept2[0] + (100))
 
-y1 = int(intercept2[1] + (100 * slope2))
-y2 = int(intercept2[1] - (100 * slope2))
+y3 = int(intercept2[1] + (100 * slope2))
+y4 = int(intercept2[1] - (100 * slope2))
 
-cv2.line(resized, (x2, y2), (x1, y1), (0, 0, 255), 2)
+cv2.line(resized, (x3, y3), (x4, y4), (0, 0, 255), 2)
+
+line1 = ((x1, y1), (x2, y2))
+line2 = ((x3, y3), (x4, y4))
+
+intersection = find_intersection_2(line1, line2)
+
+GoingPositive = True
+GoingNegitive = True
+
+highestPoint = points[0]
+
+counter = 5
+
+while (GoingPositive or GoingNegitive):
+
+    print(counter)
+
+    if GoingPositive:
+        x1, y1 = intersection
+        x2, y2 = points[counter]
+
+        slopeInIf1 = (find_slope(x1, y1, x2, y2))
+
+        if abs(math.degrees(math.atan(SlopeTotal1Real/len(Slopes1Real))) - math.degrees(math.atan(slopeInIf1))) > 5 and counter > 5:
+            GoingPositive = False
+            endPoint1 = points[counter-2]
+
+    if GoingNegitive:
+        x1, y1 = intersection
+        x2, y2 = points[len(points) - (counter)]
+
+        slopeInIf2 = (find_slope(x1, y1, x2, y2))
+
+        print(abs(math.degrees(math.atan(SlopeTotal2Real/len(Slopes2Real))) - math.degrees(math.atan(slopeInIf2))))
+
+        if abs(math.degrees(math.atan(SlopeTotal2Real/len(Slopes2Real))) - math.degrees(math.atan(slopeInIf2))) > 5 and counter > 5: 
+            GoingNegitive = False
+            endPoint2 = points[len(points) - (counter-2)]
+
+    counter += 1
+
+cv2.circle(resized, (int(intersection[0]), int(intersection[1])), 4, (0,0,0), -1)
+
+Side1X = (intersection[0] - endPoint1[0])*0.5
+Side1Y = (endPoint1[1] - intersection[1])*0.5
+
+Side2X = (intersection[0] - endPoint2[0])*0.5
+Side2Y = (endPoint2[1] - intersection[1])*0.5
+
+# Side1X = (intersection[0] - endPoint1[0])
+# Side1Y = (endPoint1[1] - intersection[1])
+
+# Side2X = (intersection[0] - endPoint2[0])
+# Side2Y = (endPoint2[1] - intersection[1])
+
+centerPoint1 = (int(intersection[0] - Side1X), int(intersection[1] + Side1Y))
+centerPoint2 = (int(intersection[0] - Side2X), int(intersection[1] + Side2Y))
+
+centerPoint = (int(intersection[0] - Side2X - Side1X), int(intersection[1] + Side2Y + Side1Y))
+
+cv2.circle(resized, (centerPoint1), 4, (0,0,0), -1)
+cv2.circle(resized, (centerPoint2), 4, (0,0,0), -1)
+
+cv2.circle(resized, (centerPoint), 4, (255,0,255), -1)
+
+
+# if intersection:
 
 cv2.imshow("Detected Rectangles", resized)
 cv2.waitKey(0)
