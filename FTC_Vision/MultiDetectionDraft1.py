@@ -110,7 +110,7 @@ for contour in contours:
             countourBig.append(contour)
 
 
-contourProcess = countourBig[0]
+contourProcess = countourBig[5]
 
 points = [tuple(pt[0]) for pt in contourProcess]
 
