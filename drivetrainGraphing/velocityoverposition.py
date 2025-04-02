@@ -253,8 +253,8 @@ y5 = [
     61.27526917606104
 ]
 
-plt.scatter(x3, y3, c='green')
-plt.scatter(x, y, c='blue')
+# plt.scatter(x3, y3, c='green')
+# plt.scatter(x, y, c='blue')
 plt.scatter(x2, y2, c='red')
 plt.scatter(x4, y4, c='pink')
 plt.scatter(x5, y5, c='black')
