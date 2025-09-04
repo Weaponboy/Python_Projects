@@ -30,47 +30,20 @@ def runPipeline(image, llrobot):
     global YVelo
     global elapsed, AlColor, x, y, w, h, start_time, elapsed_ms
     
-    # llrobot = [0, 0, 82.5, 100, 0, 22, 1, 0
-
-    # end_time = time.time()
-
-    # # Calculate difference in milliseconds
-    # elapsed_ms = (end_time - start_time) * 1000
-
-    # # if not runTimeStart:
-    # #     llrobot = [1, 2, 3, 4, 5, 6, 7, 8]
-
-    # if (llrobot[0] == 1 and llrobot[1] == 2 and llrobot[2] == 3 and llrobot[3] == 4 and llrobot[4] == 5):
-    #     start_time = time.time()
-
-    #     # runTimeStart = True
-    #     # llrobot = [0, 0, 0, 0, 0, 0, 0, 0]
-    #     largestContour = np.array([[]])
-    #     llpython = [0, 0, 0, 0, 0, 0, 0, 0]
-
-    #     return largestContour, image, llpython
-
+    llrobot = [0, 1, 82.5, 100, 0, 22, 0, 0]
 
     global llrobotLocal
     llrobotLocal = llrobot
     
     isScanning = True
     AlColor = llrobot[1] > 0
-    Red = True
+    Red = llrobot[6] > 0
 
     llpython = [0, 0, 0, 0, 0, 0, 0, 0]
 
     img_hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-    lower_bound = (15, 60, 80) 
-    upper_bound = (40, 255, 255)
-    
-    # lower_bound = (30, 120, 100) 
-    # upper_bound = (150, 255, 255)
-
-    PartnerContours = []
-
-    x, y, w, h = 140, 120, 360, 340  # Example: x=100, y=150, width=200, height=250
+    x, y, w, h = 140, 120, 360, 340 
     roiImage = img_hsv[y:y+h, x:x+w]
 
     if (AlColor):
@@ -79,43 +52,35 @@ def runPipeline(image, llrobot):
             lower_bound_red = (140, 80, 140) 
             upper_bound_red = (180, 255, 255)
 
-            img_threshold_Red = cv2.inRange(roiImage, lower_bound_red, upper_bound_red)
+            img_threshold = cv2.inRange(roiImage, lower_bound_red, upper_bound_red)
 
-            PartnerContours, _ = cv2.findContours(img_threshold_Red, 
+            contours, _ = cv2.findContours(img_threshold, 
                                 cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
         else:
             lower_bound_blue = (30, 120, 100) 
             upper_bound_blue = (150, 255, 255)
 
-            img_threshold_Blue = cv2.inRange(roiImage, lower_bound_blue, upper_bound_blue)
+            img_threshold = cv2.inRange(roiImage, lower_bound_blue, upper_bound_blue)
 
-            PartnerContours, _ = cv2.findContours(img_threshold_Blue, 
+            contours, _ = cv2.findContours(img_threshold, 
                                 cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
-    img_threshold = cv2.inRange(roiImage, lower_bound, upper_bound)
-
+            
     contours, _ = cv2.findContours(img_threshold, 
                                     cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    if AlColor:
-        contours += PartnerContours
+    for contour in contours:
+        # Scale each point in the contour
+        area = cv2.contourArea(contour)
 
-        # scale_x = 640 / w  # Original width / new width
-        # scale_y = 480 / h  # Original height / new height
-
-    # for contour in contours:
-    #     # Scale each point in the contour
-    #     area = cv2.contourArea(contour)
-
-    #     adjusted = contour.astype(float)  # Convert to float for scaling
-    #     # adjusted[:, :, 0] *= scale_x  # Scale x coordinates
-    #     # adjusted[:, :, 1] *= scale_y  # Scale y coordinates
-    #     # Shift by the ROI offset (x, y)
-    #     adjusted[:, :, 0] += x
-    #     adjusted[:, :, 1] += y
-    #     # adjusted_contours.append(adjusted.astype(np.int32))
-    #     if area > 300:
-    #         cv2.drawContours(image, adjusted.astype(np.int32), -1, (0, 255, 0), 2)  # Green contours with thickness 2
+        adjusted = contour.astype(float)  # Convert to float for scaling
+        # adjusted[:, :, 0] *= scale_x  # Scale x coordinates
+        # adjusted[:, :, 1] *= scale_y  # Scale y coordinates
+        # Shift by the ROI offset (x, y)
+        adjusted[:, :, 0] += x
+        adjusted[:, :, 1] += y
+        # adjusted_contours.append(adjusted.astype(np.int32))
+        if area > 300:
+            cv2.drawContours(image, adjusted.astype(np.int32), -1, (0, 255, 0), 2)  # Green contours with thickness 2
 
     largestContour = np.array([[]])
 
@@ -128,18 +93,6 @@ def runPipeline(image, llrobot):
         start = time.time()
         
         llpython = [0, 0, 0, 0, 0, 0, 0, 0]
-
-        # cv2.circle(image, (320, 240), 5, (255, 0, 255), -1)
-
-        # cv2.circle(image, (360, 240), 5, (255, 0, 255), -1)
-        # cv2.circle(image, (400, 240), 5, (255, 0, 255), -1)
-        # cv2.circle(image, (120, 200), 5, (255, 0, 255), -1)
-        # cv2.circle(image, (120, 300), 5, (255, 0, 255), -1)
-
-        # cv2.circle(image, (500, 140), 5, (255, 255, 255), -1)
-        # cv2.circle(image, (120, 140), 5, (255, 255, 255), -1)
-        # cv2.circle(image, (500, 460), 5, (255, 255, 255), -1)
-        # cv2.circle(image, (120, 460), 5, (255, 255, 255), -1)
 
         if len(contours) > 0:
     
@@ -216,7 +169,7 @@ def drawRotatedBoundingBoxes(image, contours):
             cv2.circle(image, (cX  + x, (cY-xadj  + y)), 5, (255, 255, 0), -1)
             # cv2.drawContours(image, [box], 0, (0, 255, 0), 2)
 
-        elif area > 1000 and cY > 84 and cY < 190 and area < 2900:
+        elif area > 600 and cY > 84 and cY < 190 and area < 2900:
             rect = cv2.minAreaRect(contour)
             box = cv2.boxPoints(rect)
             box = np.int0(box)
@@ -299,12 +252,14 @@ def drawRotatedBoundingBoxes(image, contours):
     return image
 
 class DetectionData:
-    def _init_(self, read_time, target_point, angle):
+    def __init__(self, read_time, target_point, angle):
         self.read_time = read_time
         self.target_point = target_point
         self.angle = angle
 
 def convert_positions_to_field_positions(slide_position, detections, ROI, view_size_cm_y_axis):
+
+    global Ydist, Xdist
 
     #constants
     FovAngle = 42.8
@@ -332,6 +287,9 @@ def convert_positions_to_field_positions(slide_position, detections, ROI, view_s
             break
 
         # print(Counter)
+
+        46
+        61
 
         if len(llrobotLocal) > 4:
             center_point = 320
@@ -366,8 +324,6 @@ def convert_positions_to_field_positions(slide_position, detections, ROI, view_s
             global_x = rel_x_position * math.cos(math.radians(llrobotLocal[4])) - rel_y_position * math.sin(math.radians(llrobotLocal[4]))
             global_y = rel_x_position * math.sin(math.radians(llrobotLocal[4])) + rel_y_position * math.cos(math.radians(llrobotLocal[4]))
             
-            # end = time.time()
-
             elapsed = (25) / 1000
 
             if YVelo > 0:
@@ -380,8 +336,9 @@ def convert_positions_to_field_positions(slide_position, detections, ROI, view_s
             else:
                 Xdist = (XVelo * elapsed) + ((0.5 * (225)) * (elapsed * elapsed))
 
-            globalX = llrobotLocal[2] + global_x - Ydist
-            globalY = llrobotLocal[3] + global_y - Xdist
+
+            globalX = llrobotLocal[2] + global_x 
+            globalY = llrobotLocal[3] + global_y
 
             obj2 = DetectionData(detection.read_time, (globalX, globalY), detection.angle)
 
@@ -395,6 +352,7 @@ def convert_positions_to_field_positions(slide_position, detections, ROI, view_s
                     field_detections.append(obj2)
                 elif globalX < 185 and globalY > 175:
                     field_detections.append(obj2)    
+
                      
         # field_detections.append(DetectionData(detection.read_time, (llrobotLocal[2] + global_x, llrobotLocal[3] + global_y), detection.angle))
 
